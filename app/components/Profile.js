@@ -5,6 +5,8 @@ var UserProfile = require('./Github/UserProfile');
 var Repos = require('./Github/Repos');
 var Notes = require('./Notes/Notes');
 
+var helpers = require('../utils/helpers');
+
 var ReactFireMixin = require('reactfire');
 var FireBase = require('firebase');
 
@@ -14,22 +16,38 @@ var Profile =React.createClass({
 	{
      return {
 				notes:[],
-				bio: {bio:"I Am Human"},
-				repos: [1,2,3]
+				bio: {},
+				repos: []
         	}
 
 	},
-	componentWillMount:function()
+	init:function(username)
 	{
-
-       this.ref = new FireBase("https://fiery-torch-1031.firebaseio.com/"+this.props.params.username);
+	
+       this.ref = new FireBase("https://fiery-torch-1031.firebaseio.com/"+username);
        //var chidRef = this.ref.child(this.props.params.username);
        this.bindAsArray(this.ref,'notes');
 
+       helpers.getGithubInfo(username).then(function(data)
+       {
+        this.setState({repos:data.repos,bio:data.bio});
+
+       }.bind(this))
+	},
+	componentWillMount:function()
+	{
+    
+       this.init(this.props.params.username);
 	},
 	componentWillUnmount:function()
 	{
        this.unbind('notes');
+	},
+	componentWillReceiveProps:function(nextProps)
+	{
+		
+	   this.unbind('notes');
+       this.init(nextProps.params.username);
 	},
 	handleAddNote:function(newNote)
 	{

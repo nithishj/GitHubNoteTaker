@@ -1,19 +1,18 @@
-var React = require('react');
-var ReactRouter = require('react-router');
+import React from 'react';
+import { PropTypes } from 'react-router'
 
-var SearchGitHub =React.createClass({
-
-    mixins:[ReactRouter.History],
-    handleSubmit:function()
+class SearchGitHub extends React.Component
+{
+  handleSubmit()
     {
        var username = this.refs.username.value;
        this.refs.username.value = "";
-       this.history.pushState(null, '/profile/'+username);
-    },
-     render:function()
-	{
+       this.context.history.pushState(null, '/profile/'+username);
+    }
+     render()
+  {
      return <div classNam="col-sm-12">
-               <form onSubmit={this.handleSubmit}>
+               <form onSubmit={this.handleSubmit.bind(this)}>
                 <div className="form-group col-sm-7">
                     <input type="text" className="form-control" ref="username" />
                 </div>
@@ -25,6 +24,8 @@ var SearchGitHub =React.createClass({
             </div>
     }
 
-});
+}
 
-module.exports = SearchGitHub;
+SearchGitHub.contextTypes = { history: PropTypes.history }
+
+export default SearchGitHub;

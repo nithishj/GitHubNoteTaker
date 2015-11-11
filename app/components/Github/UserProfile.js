@@ -1,16 +1,13 @@
-var React = require('react');
+import React from 'react';
 
-var UserProfile =React.createClass({
-	propTypes:{
-     username:React.PropTypes.string.isRequired,
-     bio:React.PropTypes.object.isRequired
-	},
-   render:function()
+class UserProfile extends React.Component
+{
+   render()
 	{
 
 		var bio = this.props.bio;
 		var fieldNames = ['name', 'login', 'email', 'location', 'company', 'followers', 'following', 'public_repos', 'blog'];
-		var fields = fieldNames.map(function(field, index){
+		var fields = fieldNames.map((field, index) => {
 		return (bio[field]) ==0?null:(bio[field] && <li key={index} className="list-group-item">{field}: {bio[field]}</li>);
 		});
 
@@ -24,6 +21,12 @@ var UserProfile =React.createClass({
 
     }
 
-});
 
-module.exports = UserProfile;
+}
+
+UserProfile.propTypes = {
+     username:React.PropTypes.string.isRequired,
+     bio:React.PropTypes.object.isRequired
+	};
+
+export default UserProfile;

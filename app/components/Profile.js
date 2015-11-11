@@ -1,68 +1,77 @@
-var React = require('react');
-var ReactRouter = require('react-router');
+import React from 'react';
 
-var UserProfile = require('./Github/UserProfile');
-var Repos = require('./Github/Repos');
-var Notes = require('./Notes/Notes');
+import UserProfile from './Github/UserProfile';
+import Repos from './Github/Repos';
+import Notes from './Notes/Notes';
+import helpers from '../utils/helpers';
+import Rebase from 're-base';
 
-var helpers = require('../utils/helpers');
-
-var ReactFireMixin = require('reactfire');
-var FireBase = require('firebase');
-
-var Profile =React.createClass({
-	mixins:[ReactFireMixin],
-	getInitialState:function()
+ var rebase = Rebase.createClass("https://fiery-torch-1031.firebaseio.com");
+class Profile extends React.Component
+{
+   constructor(props)
 	{
-     return {
+		super(props)
+   this.state = {
 				notes:[],
 				bio: {},
 				repos: []
-        	}
+        	};
 
-	},
-	init:function(username)
+	}
+
+	init(username)
 	{
 	
-       this.ref = new FireBase("https://fiery-torch-1031.firebaseio.com/"+username);
+       //this.ref = new FireBase("https://fiery-torch-1031.firebaseio.com/"+username);
        //var chidRef = this.ref.child(this.props.params.username);
-       this.bindAsArray(this.ref,'notes');
+       //this.bindAsArray(this.ref,'notes');
+	 this.ref =rebase.bindToState(username, {
+			context: this,
+			state: 'notes',
+			asArray: true
+		});
 
-       helpers.getGithubInfo(username).then(function(data)
+       helpers.getGithubInfo(username).then((data)=>
        {
         this.setState({repos:data.repos,bio:data.bio});
 
-       }.bind(this))
-	},
-	componentWillMount:function()
+       })
+	}
+
+	componentWillMount()
 	{
-    
        this.init(this.props.params.username);
-	},
-	componentWillUnmount:function()
+	}
+	
+	componentWillUnmount()
 	{
-       this.unbind('notes');
-	},
-	componentWillReceiveProps:function(nextProps)
+		rebase.removeBinding(this.ref);
+	}
+
+    componentWillReceiveProps(nextProps)
 	{
 		
-	   this.unbind('notes');
+	   rebase.removeBinding(this.ref);
        this.init(nextProps.params.username);
-	},
-	handleAddNote:function(newNote)
+	}
+
+	handleAddNote(newNote)
 	{
-       this.ref.push(newNote);
-	},
-	render:function()
+       rebase.post(this.props.params.username,{
+       	data:this.state.notes.concat([newNote])
+       })
+	}
+
+	render()
 	{
 		//getting params from props by react-router ex: this.props
  return <div className="row">
            <UserProfile username={this.props.params.username} bio={this.state.bio}/>
            <Repos repos={this.state.repos} username={this.props.params.username}/>
-           <Notes notes={this.state.notes} username={this.props.params.username} addNote={this.handleAddNote}/>
-        </div>
+           <Notes notes={this.state.notes} username={this.props.params.username} addNote={this.handleAddNote.bind(this)}/>
+         </div>
  	}
+}
 
-});
-
-module.exports = Profile;
+export default Profile
